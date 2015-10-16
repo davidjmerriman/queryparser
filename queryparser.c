@@ -15,25 +15,53 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#define BUFSIZE 32768
+
 const char* progname = "queryparser";
-bool do_parse(const char* query, char* (*output_fnc)(const void*) );
 
-bool do_parse(const char* query, char* (*output_fnc)(const void*) )
-{
-	MemoryContext ctx = NULL;
+char* readInput(void);
+bool doParse(const char* query, char* (*output_fnc)(const void*) );
+
+char* readInput() {
+    char buffer[BUFSIZE];
+    size_t inputSize = 1;
+    char * input = malloc(sizeof(char) * BUFSIZE);
+
+    if (input == NULL) {
+        perror("Could not allocate input string");
+        exit(1);
+    }
+
+    input[0] = '\0'; // C strings are null-terminated; init zero-length string
+
+    // Read until end of input (CTRL+D, CTRL+Z on Windows)
+    while (fgets(buffer, BUFSIZE, stdin)) {
+        char * old = input;
+        inputSize += strlen(buffer);
+        input = realloc(input, inputSize);
+        if (input == NULL) {
+            perror("Could not reallocate input to append buffer");
+            free(old);
+            exit(2);
+        }
+        strcat(input, buffer);
+    }
+
+    if (ferror(stdin)) {
+        perror("Error reading input");
+        free(input);
+        exit(3);
+    }
+
+    return input;
+}
+
+bool doParse(const char* query, char* (*output_fnc)(const void*)) {
 	List *tree;
-
-	ctx = AllocSetContextCreate(TopMemoryContext,
-								"RootContext",
-								ALLOCSET_DEFAULT_MINSIZE,
-								ALLOCSET_DEFAULT_INITSIZE,
-								ALLOCSET_DEFAULT_MAXSIZE);
-	MemoryContextSwitchTo(ctx);
 
 	tree = raw_parser(query);
 
-	if (tree != NULL)
-	{
+	if (tree != NULL) {
 		char *s;
 		s = output_fnc(tree);
 
@@ -42,43 +70,23 @@ bool do_parse(const char* query, char* (*output_fnc)(const void*) )
 		pfree(s);
 	}
 
-	MemoryContextSwitchTo(TopMemoryContext);
-	MemoryContextDelete(ctx);
-
 	return (tree != NULL);
 }
 
-#define BUFSIZE 32768
-
-int main(int argc, char **argv)
-{
-	char  line[BUFSIZE];
-	char* p_nl;
+int main(int argc, char **argv) {
+	char* line;
 	MemoryContextInit();
 
-	if (argc > 1 &&
-		(strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0))
-	{
+	if (argc > 1 &&	(strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0))	{
 		printf("Parse SQL query from stdin\nUSAGE: queryparser\nOPTIONS:\n\t--json: Output in JSON format\n\t--help: Show this help\n");
 		return 0;
 	}
 
-	if (!fgets(line, BUFSIZE, stdin))
-		return 2;  /* no data read */
+    line = readInput();
 
-	p_nl = strchr(line, (int) '\n');
-	if (p_nl != NULL) {
-		*(p_nl) = '\0';
+	if (argc > 1 && strcmp(argv[1], "--json") == 0)	{
+		return doParse(line, &nodeToJSONString) ? 0 : 1;
 	} else {
-		return 3; /* no newline */
-	}
-
-	if (line[0] == '#' || line[0] == '\0')
-		return 1;
-
-	if (argc > 1 && strcmp(argv[1], "--json") == 0)
-	{
-		return do_parse(line, &nodeToJSONString) ? 0 : 1;
-	}
-	return do_parse(line, &nodeToString) ? 0 : 1;
+        return doParse(line, &nodeToString) ? 0 : 1;
+    }
 }
