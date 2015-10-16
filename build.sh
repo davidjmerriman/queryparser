@@ -29,7 +29,7 @@ fi
 cd src
 
 # Set up to build the query parser
-CPPFLAGS="-s -O2 -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -Wl,--allow-multiple-definition "
+CPPFLAGS="-static -s -O2 -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -Wl,--allow-multiple-definition "
 
 LIBFLAGS="-lm"
 INCLUDE="-Iinclude"
