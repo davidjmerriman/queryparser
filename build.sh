@@ -36,9 +36,9 @@ INCLUDE="-Iinclude"
 EXENAME="../../queryparser"
 
 if [ `uname -s` = "Darwin" ]; then
-    EXENAME+="mac"
+    EXENAME+="mac.exe"
 elif [ `uname -s` = "Linux" ]; then
-    EXENAME+="linux"
+    EXENAME+="linux.exe"
     LIBFLAGS+=" -lrt -ldl"
 else
     EXENAME+="win"
