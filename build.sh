@@ -39,6 +39,7 @@ if [ `uname -s` = "Darwin" ]; then
     EXENAME+="mac"
 elif [ `uname -s` = "Linux" ]; then
     EXENAME+="linux"
+    LIBFLAGS+=" -lrt -ldl"
 else
     EXENAME+="win"
     LIBFLAGS+=" -lws2_32 -lsecur32"
