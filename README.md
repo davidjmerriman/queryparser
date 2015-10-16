@@ -23,6 +23,8 @@ C:\         /c
 PATH="/c/Program Files/Git/cmd:${PATH}"
 ```
 
+Now, when running the commands for building, you will launch C:\MinGW\msys\1.0\msys.bat, and run them from there.
+
 ### Linux
 
 Install instructions for Ubuntu; may vary if your distro uses yum, rpm, etc. instead of apt-get
