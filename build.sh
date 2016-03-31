@@ -29,7 +29,7 @@ fi
 cd src
 
 # Set up to build the query parser
-CPPFLAGS="-static -s -O2 -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -Wl,--allow-multiple-definition "
+CPPFLAGS=" -O2 -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv "
 
 LIBFLAGS="-lm"
 INCLUDE="-Iinclude"
@@ -40,10 +40,12 @@ if [ `uname -s` = "Darwin" ]; then
 elif [ `uname -s` = "Linux" ]; then
     EXENAME+="linux.exe"
     LIBFLAGS+=" -lrt -ldl"
+    CPPFLAGS+=" -s -static -Wl,--allow-multiple-definition"
 else
     EXENAME+="win"
     LIBFLAGS+=" -lws2_32 -lsecur32"
     INCLUDE+=" -Iinclude/port/win32"
+    CPPFLAGS+=" -s -static -Wl,--allow-multiple-definition"
 fi
 
 OBJFILES=`find backend -name '*.o' | egrep -v '(main/main\.o|snowball|libpqwalreceiver|conversion_procs)' | xargs echo`
